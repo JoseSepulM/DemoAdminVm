@@ -8,7 +8,7 @@ stages:
     displayName: "Instalar Apache y Configurar Página"
     
     environment:
-      name: "Admin-VM-Linux" # Nombre de tu entorno
+      name: "Admin-VM" # Nombre de tu entorno
       resourceType: VirtualMachine # Tipo de recurso, en este caso una máquina virtual
 
     strategy:
