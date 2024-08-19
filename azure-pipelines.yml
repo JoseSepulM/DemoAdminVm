@@ -1,19 +1,26 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
+stages:
+- stage: DeployToVM
+  jobs:
+  - deployment: InstallApacheAndConfigure
+    displayName: "Instalar Apache y Configurar Página"
+    
+    environment:
+      name: "Admin-VM-Linux" # Nombre de tu entorno
+      resourceType: VirtualMachine # Tipo de recurso, en este caso una máquina virtual
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: |
+              echo "Iniciando instalación de Apache..."
+              sudo apt-get update
+              sudo apt-get install -y apache2
+              echo "Hola Estudiantes, Hemos configurado la administración y toma de control de la máquina virtual desde Azure DevOps con código automatizado para cumplir con el CI/CD" | sudo tee /var/www/html/index.html
+              sudo systemctl restart apache2
+              echo "Instalación y configuración completadas."
+            displayName: "Instalar Apache y Configurar Mensaje"
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
