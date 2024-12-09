@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Recetas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .card {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="my-4">Listado de Recetas</h1>
+    <div id="recetas" class="row">
+        <!-- Las tarjetas de recetas se generarán aquí -->
+    </div>
+</div>
+
+<script>
+
+window.onload = function() {
+    alert(123);
+    const token = localStorage.getItem('token');
+    console.log("token"+token);
+    if (token) {
+        // Enviar el token en la cabecera de la solicitud a recetaView
+        fetch('/recetaView', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('No autorizado');
+            }
+            // Si la respuesta es válida, puedes procesar la vista
+            return response.text(); // o response.json() si necesitas datos
+        })
+        .then(data => {
+            // Aquí puedes manejar los datos devueltos, como actualizar la vista
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Redirigir a login si no está autorizado
+            window.location.href = '/login';
+        });
+    } else {
+        // Si no hay token, redirigir a login
+        window.location.href = '/login';
+    }
+};
+
+const token = localStorage.getItem('token');
+
+    if (token) {
+        fetch('/recetaView', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}` // Enviar el token en la solicitud
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // Procesar la respuesta
+            } else {
+                console.error('Error al acceder a recetaView:', response.status);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Función para obtener las recetas desde el endpoint
+    async function fetchRecetas() {
+        try {
+            const response = await fetch('http://localhost:8081/receta');
+            if (!response.ok) {
+                throw new Error('Error en la red');
+            }
+            const recetas = await response.json();
+            displayRecetas(recetas);
+        } catch (error) {
+            console.error('Error al obtener las recetas:', error);
+            document.getElementById('recetas').innerHTML = '<p class="text-danger">No se pudieron cargar las recetas.</p>';
+        }
+    }
+
+    // Función para mostrar las recetas en tarjetas
+    function displayRecetas(recetas) {
+        const recetasContainer = document.getElementById('recetas');
+        recetasContainer.innerHTML = ''; // Limpiar el contenedor
+
+        recetas.forEach(receta => {
+            const card = document.createElement('div');
+            card.className = 'col-md-4';
+            card.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">${receta.nombre}</h5>
+                        <p class="card-text">Año de creación: ${receta.anioCreacion}</p>
+                        <p class="card-text">Vigente: ${receta.vigente}</p>
+                    </div>
+                </div>
+            `;
+            recetasContainer.appendChild(card);
+        });
+    }
+
+    // Llamar a la función para obtener las recetas al cargar la página
+    window.onload = fetchRecetas;
+</script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

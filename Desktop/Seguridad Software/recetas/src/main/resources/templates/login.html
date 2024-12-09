@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="loginForm">
+        <label for="user">Username:</label>
+        <input type="text" id="user" name="user" required>
+        <br>
+        <label for="encryptedPass">Password:</label>
+        <input type="password" id="encryptedPass" name="encryptedPass" required>
+        <br>
+        <button type="submit">Login</button>
+    </form>
+    <div id="error" style="color: red;" th:if="${error}" th:text="${error}"></div>
+
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async function (event) {
+            event.preventDefault(); // Evitar el comportamiento por defecto del formulario
+
+            const username = document.getElementById("user").value;
+            const password = document.getElementById("encryptedPass").value;
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        user: username,
+                        encryptedPass: password
+                    })
+                });
+
+                // Verificar si la respuesta fue exitosa
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    throw new Error(errorMessage); // Lanzar un error si no es ok
+                }
+
+                // Obtener el token del cuerpo de la respuesta
+                const token = await response.text();
+                localStorage.setItem('token', token); // Almacenar el token en localStorage
+
+                // Redirigir a la página de recetas
+                window.location.href = '/recetaView';
+            } catch (error) {
+                const errorDiv = document.getElementById("error");
+                if (errorDiv) {
+                    errorDiv.innerText = error.message; // Mostrar el mensaje de error
+                }
+            }
+        });
+
+        // Enviar el token al acceder a recetaView
+        window.onload = function() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                // Enviar el token en la cabecera de la solicitud a recetaView si se accede a la página
+                fetch('/recetaView', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': token
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('No autorizado');
+                    }
+                    // Aquí puedes procesar la respuesta de recetaView
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Redirigir a login si no está autorizado
+                    window.location.href = '/login';
+                });
+            }
+        };
+    </script>
+</body>
+</html>

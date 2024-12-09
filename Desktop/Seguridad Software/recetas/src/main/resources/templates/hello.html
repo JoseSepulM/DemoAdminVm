@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello Page</title>
+</head>
+<body>
+    <h1>Hello, User!</h1>
+    <div id="userData"></div>
+    <div id="error" style="color: red;"></div>
+
+    <script>
+        window.onload = async function () {
+            const token = localStorage.getItem('token');
+
+            if (token) {
+                try {
+                    const response = await fetch('/protected-data', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + token,
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const errorMessage = await response.text();
+                        throw new Error(errorMessage);
+                    }
+
+                    const data = await response.json();
+                    document.getElementById('userData').innerText = JSON.stringify(data); 
+                } catch (error) {
+                    document.getElementById('error').innerText = error.message;
+                }
+            } else {
+                document.getElementById('error').innerText = 'No token found. Please log in.';
+            }
+        };
+    </script>
+</body>
+</html>
